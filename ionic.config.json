@@ -1,0 +1,7 @@
+{
+  "name": "LotteryDBTest",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "react"
+}
