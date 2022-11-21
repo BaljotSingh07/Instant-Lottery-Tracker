@@ -1,6 +1,6 @@
 import { IonContent, IonHeader, IonBackButton, IonTitle, IonToolbar, IonButtons, IonMenuButton, IonReorder, IonReorderGroup, IonItem, IonLabel, IonGrid, IonRow, IonCol, IonText, IonButton, IonIcon, IonInput, IonList, IonListHeader, IonTextarea, useIonAlert, IonLoading, useIonToast, IonFab, IonFabButton, IonNote, IonModal } from '@ionic/react';
 import React, { useEffect, useRef, useState } from 'react';
-import { checkmarkSharp, addSharp } from 'ionicons/icons';
+import { checkmarkSharp, addSharp, arrowDownSharp } from 'ionicons/icons';
 import {getShiftByDate, setShiftByDate ,ILottery, ISummary, IHistory, IShift, getPrevShiftByDate} from '../functions/functions';
 import dayjs from 'dayjs';
 import './Shift.css';
@@ -113,12 +113,8 @@ const Shift: React.FC<IShiftProps> = ({date, ondissmiss, newShift=false}) => {
       setSummaryData(shift.summaray)
       setNotes(shift.notes)
       setLoadingScreen(false)
-      if(!newShift){
-      setTimeout(() => {
-        scrollToBottom()
-        }, 500); }
     }else{
-      presentAlert({header: "ERROR", subHeader: "No previous shift found.", message: "If this is your first time add the shift please ignore this message. If its not, it is not same to continue.", buttons:['Ok']})
+      presentAlert({header: "ERROR", subHeader: "No previous shift found.", message: "If this is your first time add the shift please ignore this message. If its not, it is not safe to continue.", buttons:['Ok']})
     }
   },[])
 
@@ -132,7 +128,11 @@ const Shift: React.FC<IShiftProps> = ({date, ondissmiss, newShift=false}) => {
         </IonHeader>
         <IonContent ref={ionContentRef} className="ion-padding">
             <IonLoading isOpen={loadingScreen}/>
-
+            {/* <IonFab slot='fixed' vertical='top' horizontal='end'>
+              <IonFabButton color={'light'} size='small'>
+                <IonIcon  icon={arrowDownSharp}/>
+              </IonFabButton>
+            </IonFab> */}
             <IonListHeader><h1>{date?.format("MMM DD, YYYY")}</h1></IonListHeader>
             <IonReorderGroup disabled={false} onIonItemReorder={(event) => {setData(event.detail.complete(data))}}>
               {data.map((e,i) => <IonItem  shape='round' key={i}>

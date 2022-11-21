@@ -197,9 +197,9 @@ body{
   }
 
   .ios ion-modal {
-    --ion-background-color: var(--ion-item-background);
-    --ion-toolbar-background: var(--ion-toolbar-background:);
-    --ion-toolbar-border-color: var(--ion-toolbar-background:);
+    --ion-background-color: var(--ion-color-step-50);
+    --ion-toolbar-background: var(--ion-color-step-50);
+    --ion-toolbar-border-color: var(--ion-color-step-100);
   }
 
 
@@ -239,10 +239,10 @@ body{
 
     --ion-item-background: #0a0a0a;
 
-    --ion-toolbar-background: #0a0a0a;;
+    --ion-toolbar-background: #131313;
 
-    --ion-tab-bar-background: #1f1f1f;
+    --ion-tab-bar-background: #131313;
 
-    --ion-card-background: #0a0a0a;
+    --ion-card-background: #1e1e1e;
   }
 }

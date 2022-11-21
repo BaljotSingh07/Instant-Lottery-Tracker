@@ -1,8 +1,7 @@
 import { Redirect, Route } from 'react-router-dom';
-import { IonApp, IonRouterOutlet, setupIonicReact, IonNav, IonTab, IonTabs, IonTabBar, IonTabButton, IonLabel, IonIcon, IonPage} from '@ionic/react';
+import { IonApp, IonRouterOutlet, setupIonicReact, IonNav, IonTab, IonTabs, IonTabBar, IonTabButton, IonLabel, IonIcon} from '@ionic/react';
 import { IonReactHashRouter, IonReactRouter } from '@ionic/react-router';
 import { homeSharp, settingsSharp, ticketSharp } from 'ionicons/icons';
-import Shift from './pages/ShiftModel';
 import Home2 from './pages/Home2';
 
 /* Core CSS required for Ionic components to work properly */
@@ -23,8 +22,6 @@ import '@ionic/react/css/display.css';
 
 /* Theme variables */
 import './theme/variables.css';
-import Lottries from './pages/Lottries';
-import Home from './pages/Home';
 import LotterySetting from './pages/LotterySetting';
 import LottriesPage from './pages/LottriesPage';
 
@@ -33,7 +30,7 @@ setupIonicReact();
 const App: React.FC = () => (
   <>
   <IonApp>
-  <IonReactRouter>
+  <IonReactHashRouter>
     <IonTabs>
     <IonRouterOutlet>
    
@@ -71,7 +68,7 @@ const App: React.FC = () => (
         </IonTabButton>
       </IonTabBar>
     </IonTabs>
-    </IonReactRouter>
+    </IonReactHashRouter>
   </IonApp>
   </>
 );
