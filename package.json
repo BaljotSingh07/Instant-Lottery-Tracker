@@ -23,6 +23,7 @@
     "@types/react-router": "^5.1.11",
     "@types/react-router-dom": "^5.1.7",
     "dayjs": "^1.11.6",
+    "gh-pages": "^4.0.0",
     "ionicons": "^6.0.3",
     "jsqr": "^1.4.0",
     "phonegap-plugin-barcodescanner": "^8.1.0",
@@ -48,6 +49,8 @@
   },
   "scripts": {
     "start": "react-scripts start",
+    "predeploy": "ionic build",
+    "deploy": "gh-pages -d build",
     "build": "react-scripts build",
     "test": "react-scripts test --transformIgnorePatterns 'node_modules/(?!(@ionic/react|@ionic/react-router|@ionic/core|@stencil/core|ionicons)/)'",
     "eject": "react-scripts eject"
@@ -73,5 +76,6 @@
   "devDependencies": {
     "@capacitor/cli": "4.3.0"
   },
+  "homepage": "https://baljotsingh07.github.io/Instant-Lottery-Tracker",
   "description": "An Ionic project"
 }

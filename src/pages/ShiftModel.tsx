@@ -97,6 +97,7 @@ const Shift: React.FC<IShiftProps> = ({date, ondissmiss, newShift=false}) => {
     ionContentRef?.current?.scrollToBottom(2000);
   }
 
+  
   useEffect(() => {
     if(!date){
       return
@@ -125,9 +126,6 @@ const Shift: React.FC<IShiftProps> = ({date, ondissmiss, newShift=false}) => {
     <>
         <IonHeader>
           <IonToolbar>
-            <IonButtons slot="start">
-              <IonBackButton/>
-            </IonButtons>
             <IonButton onClick={() => {ondissmiss(undefined)}} slot='end' size={'small'} color={'danger'} fill={'clear'}>Cancel</IonButton>
             <IonTitle>{newShift ? "New Shift " : "View Shift"} {date?.format("MM/DD/YY")}</IonTitle>
           </IonToolbar>
