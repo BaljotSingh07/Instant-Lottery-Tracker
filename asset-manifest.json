@@ -1,7 +1,7 @@
 {
   "files": {
-    "main.css": "/Instant-Lottery-Tracker/static/css/main.7ba077a6.css",
-    "main.js": "/Instant-Lottery-Tracker/static/js/main.53c83f33.js",
+    "main.css": "/Instant-Lottery-Tracker/static/css/main.ba60997a.css",
+    "main.js": "/Instant-Lottery-Tracker/static/js/main.4987226b.js",
     "static/js/443.7350ef82.chunk.js": "/Instant-Lottery-Tracker/static/js/443.7350ef82.chunk.js",
     "static/js/738.62c4ef43.chunk.js": "/Instant-Lottery-Tracker/static/js/738.62c4ef43.chunk.js",
     "static/js/372.9053d0a7.chunk.js": "/Instant-Lottery-Tracker/static/js/372.9053d0a7.chunk.js",
@@ -14,8 +14,8 @@
     "static/js/377.9e3e964a.chunk.js": "/Instant-Lottery-Tracker/static/js/377.9e3e964a.chunk.js",
     "service-worker.js": "/Instant-Lottery-Tracker/service-worker.js",
     "index.html": "/Instant-Lottery-Tracker/index.html",
-    "main.7ba077a6.css.map": "/Instant-Lottery-Tracker/static/css/main.7ba077a6.css.map",
-    "main.53c83f33.js.map": "/Instant-Lottery-Tracker/static/js/main.53c83f33.js.map",
+    "main.ba60997a.css.map": "/Instant-Lottery-Tracker/static/css/main.ba60997a.css.map",
+    "main.4987226b.js.map": "/Instant-Lottery-Tracker/static/js/main.4987226b.js.map",
     "443.7350ef82.chunk.js.map": "/Instant-Lottery-Tracker/static/js/443.7350ef82.chunk.js.map",
     "738.62c4ef43.chunk.js.map": "/Instant-Lottery-Tracker/static/js/738.62c4ef43.chunk.js.map",
     "372.9053d0a7.chunk.js.map": "/Instant-Lottery-Tracker/static/js/372.9053d0a7.chunk.js.map",
@@ -28,7 +28,7 @@
     "377.9e3e964a.chunk.js.map": "/Instant-Lottery-Tracker/static/js/377.9e3e964a.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.7ba077a6.css",
-    "static/js/main.53c83f33.js"
+    "static/css/main.ba60997a.css",
+    "static/js/main.4987226b.js"
   ]
 }
