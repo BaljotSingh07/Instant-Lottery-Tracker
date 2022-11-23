@@ -1,10 +1,12 @@
-import { IonContent, IonHeader, IonBackButton, IonTitle, IonToolbar, IonButtons, IonMenuButton, IonReorder, IonReorderGroup, IonItem, IonLabel, IonGrid, IonRow, IonCol, IonText, IonButton, IonIcon, IonInput, IonList, IonListHeader, IonTextarea, useIonAlert, IonLoading, useIonToast, IonFab, IonFabButton, IonNote, IonModal } from '@ionic/react';
+import { IonContent, IonHeader, IonTitle, IonToolbar, IonReorder, IonReorderGroup, IonItem, IonLabel, IonGrid, IonRow, IonCol, IonButton, IonIcon, IonInput, IonList, IonListHeader, IonTextarea, useIonAlert, IonLoading, useIonToast, IonModal, useIonViewDidLeave } from '@ionic/react';
 import React, { useEffect, useRef, useState } from 'react';
-import { checkmarkSharp, addSharp, arrowDownSharp } from 'ionicons/icons';
+import { useIonViewWillLeave } from '@ionic/react';
+import { checkmarkSharp, addSharp } from 'ionicons/icons';
 import {getShiftByDate, setShiftByDate ,ILottery, ISummary, IHistory, IShift, getPrevShiftByDate} from '../functions/functions';
 import dayjs from 'dayjs';
 import './Shift.css';
 import Lottries from './Lottries';
+import { useLocation, useHistory } from 'react-router';
 
 interface IShiftProps{
   date: dayjs.Dayjs | undefined,
@@ -22,6 +24,8 @@ const Shift: React.FC<IShiftProps> = ({date, ondissmiss, newShift=false}) => {
   const [loadingScreen, setLoadingScreen] = useState(true)
   const [dirtyPage, setDirtyPage] = useState<Boolean>(false)
   const ionContentRef = useRef<HTMLIonContentElement>(null)
+  const nav = useHistory()
+  const location = useLocation()
 
   function addORsub(index: number, addORsub: "add" | "sub"){
     const clonedLottery: ILottery = Object.assign({}, data[index])
@@ -76,6 +80,7 @@ const Shift: React.FC<IShiftProps> = ({date, ondissmiss, newShift=false}) => {
 
   function lotteryModalDissmised(newLottery: ILottery | undefined){
     setLotteryModalOpen(false)
+    nav.replace("?modalOpened=true")
     if(newLottery){
       const clonedShift = [...data]
       clonedShift.push(newLottery)
@@ -97,6 +102,11 @@ const Shift: React.FC<IShiftProps> = ({date, ondissmiss, newShift=false}) => {
     ionContentRef?.current?.scrollToBottom(2000);
   }
 
+  useEffect(() => {
+    if(!location.search.includes('lottriesOpen=true')) {
+      setLotteryModalOpen(false)
+   }
+  },[location])
   
   useEffect(() => {
     if(!date){
@@ -172,7 +182,7 @@ const Shift: React.FC<IShiftProps> = ({date, ondissmiss, newShift=false}) => {
             
               <IonItem >
                 <IonGrid>
-                  <IonButton onClick={() => setLotteryModalOpen(true)} fill='clear' expand='block'><IonIcon slot='start' icon={addSharp}/>New Slot</IonButton>
+                  <IonButton onClick={() => {nav.push("?modalOpened=true&lottriesOpen=true"); setLotteryModalOpen(true)}} fill='clear' expand='block'><IonIcon slot='start' icon={addSharp}/>New Slot</IonButton>
                 </IonGrid> 
               </IonItem>
 
