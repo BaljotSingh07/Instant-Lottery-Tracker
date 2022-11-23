@@ -6,10 +6,7 @@ import Lottries from "./Lottries"
 const LottriesPage: React.FC = () => {
     return(
         <IonPage>
-            <MyHeader title="Lottries Page"/>     
-            <IonContent>
-                <Lottries ondissmiss={() => {}}/>
-            </IonContent>   
+            <Lottries /> 
         </IonPage>
     )
 }
