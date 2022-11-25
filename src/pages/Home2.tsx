@@ -111,7 +111,7 @@ const Home2: React.FC= () => {
     return (
         <IonPage id="main-content">
           <MyHeader title="Home"/>
-          <IonContent className="ion-padding">
+          <IonContent >
           <IonRefresher slot="fixed" onIonRefresh={handleRefresh}>
             <IonRefresherContent></IonRefresherContent>
           </IonRefresher>

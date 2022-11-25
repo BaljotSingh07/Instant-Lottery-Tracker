@@ -1,11 +1,49 @@
-import { IonPage, IonHeader, IonToolbar, IonButtons, IonMenuButton, IonButton, IonIcon, IonTitle, IonContent } from "@ionic/react"
+import { IonPage, IonContent, IonList, IonListHeader, IonItem, IonNote, IonLabel, IonTitle, IonGrid, IonRow, IonCol, IonInput, IonButton, IonItemDivider } from "@ionic/react"
+import { useState } from "react"
 import MyHeader from "../components/Header"
 
 const LotterySetting:React.FC = () => {
+    const [data, setData] = useState([{cost: 1, endingnumber: 399},{cost: 2, endingnumber: 299},{cost: 3, endingnumber: 99}, ])
+
     return(
         <IonPage id="main-content">
           <MyHeader title="Lottery Settings"/>
-          <IonContent ></IonContent>
+          <IonContent>
+            <IonList>
+                <IonListHeader>
+                    <IonLabel>End Numbers</IonLabel>
+                </IonListHeader>
+                <IonItem lines="none">
+                    <IonLabel><p>Set the ending number of lotteries according to price.</p></IonLabel>
+                </IonItem>
+                {data.map((e,i) =>
+                <IonItem key={i}>
+                    <IonGrid fixed>
+                        <IonRow>
+                            <IonCol>
+                                <IonLabel position="stacked">Cost</IonLabel>
+                                <IonInput type="number" value={e.cost}></IonInput>
+                            </IonCol>
+                            <IonCol>
+                                <IonLabel position="stacked">Ending Number</IonLabel>
+                                <IonInput type="number" value={e.endingnumber}></IonInput>
+                            </IonCol>
+                        </IonRow>
+                    </IonGrid>
+                </IonItem>
+                )}
+                <IonItem >
+                    <IonGrid fixed>
+                        <IonButton size="small" fill="clear" expand="block">+ New Slot</IonButton>
+                    </IonGrid>
+                </IonItem>
+                <IonItem lines="none">
+                    <IonGrid fixed>
+                        <IonButton size="default" expand="block">SAVE</IonButton>
+                    </IonGrid>
+                </IonItem>
+            </IonList>
+          </IonContent>
           </IonPage>
     )
 }

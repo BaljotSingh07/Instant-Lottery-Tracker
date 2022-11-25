@@ -5,6 +5,11 @@ http://ionicframework.com/docs/theming/ */
 body{
   background-color: #262626;
 }
+
+.margin-top{
+  margin-top: 50px;
+}
+
 .ion-page {
   max-width: 600px;
   margin: auto;
