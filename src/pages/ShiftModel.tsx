@@ -1,7 +1,7 @@
-import { IonContent, IonHeader, IonTitle, IonToolbar, IonReorder, IonReorderGroup, IonItem, IonLabel, IonGrid, IonRow, IonCol, IonButton, IonIcon, IonInput, IonList, IonListHeader, IonTextarea, useIonAlert, IonLoading, useIonToast, IonModal, useIonViewDidLeave } from '@ionic/react';
+import { IonContent, IonHeader, IonTitle, IonToolbar, IonReorder, IonReorderGroup, IonItem, IonLabel, IonGrid, IonRow, IonCol, IonButton, IonIcon, IonInput, IonList, IonListHeader, IonTextarea, useIonAlert, IonLoading, useIonToast, IonModal, useIonViewDidLeave, IonItemDivider } from '@ionic/react';
 import React, { useEffect, useRef, useState } from 'react';
 import { useIonViewWillLeave } from '@ionic/react';
-import { checkmarkSharp, addSharp } from 'ionicons/icons';
+import { checkmarkSharp, addSharp, removeSharp, removeCircleSharp } from 'ionicons/icons';
 import {getShiftByDate, setShiftByDate ,ILottery, ISummary, IHistory, IShift, getPrevShiftByDate} from '../functions/functions';
 import dayjs from 'dayjs';
 import './Shift.css';
@@ -23,6 +23,7 @@ const Shift: React.FC<IShiftProps> = ({date, ondissmiss, newShift=false}) => {
   const [lotteryModalOpen, setLotteryModalOpen] = useState<boolean>(false)
   const [loadingScreen, setLoadingScreen] = useState(true)
   const [dirtyPage, setDirtyPage] = useState<Boolean>(false)
+  const [deleteMode, setDeleteMode] = useState(false)
   const ionContentRef = useRef<HTMLIonContentElement>(null)
   const nav = useHistory()
   const location = useLocation()
@@ -30,7 +31,7 @@ const Shift: React.FC<IShiftProps> = ({date, ondissmiss, newShift=false}) => {
   function addORsub(index: number, addORsub: "add" | "sub"){
     const clonedLottery: ILottery = Object.assign({}, data[index])
     const clonedSummary: ISummary = Object.assign({}, summaryData)
-    const cloneData:ILottery[] = [...data]
+    const cloneData = [...data]
     clonedSummary.lotto -= (clonedLottery.cur - clonedLottery.prev) * clonedLottery.cost
     if (addORsub === "add")
       clonedLottery.cur += 1
@@ -51,7 +52,7 @@ const Shift: React.FC<IShiftProps> = ({date, ondissmiss, newShift=false}) => {
     }
     const clonedLottery: ILottery = Object.assign({}, data[index])
     const clonedSummary: ISummary = Object.assign({}, summaryData)
-    const cloneData:ILottery[] = [...data]
+    const cloneData = [...data]
     clonedSummary.lotto -= (clonedLottery.cur - clonedLottery.prev) * clonedLottery.cost
     clonedLottery.cur = intValueChange
     clonedLottery.sale = (clonedLottery.cur - clonedLottery.prev) * clonedLottery.cost
@@ -86,6 +87,25 @@ const Shift: React.FC<IShiftProps> = ({date, ondissmiss, newShift=false}) => {
       clonedShift.push(newLottery)
       setData(clonedShift)
     }
+  }
+
+  function removeLotto(i: number){
+    const cloneData = [...data]
+    if(i === cloneData.length - 1){
+      cloneData.pop()
+      for(let i = cloneData.length-1; i >= 0; i--){
+        console.log(cloneData[i])
+        if(cloneData[i] === null){
+          cloneData.pop()
+        }else{
+          break 
+        }
+      }
+    }else{
+      cloneData[i] = null
+    }
+    setData(cloneData)
+    setDeleteMode(false)
   }
 
   function finish(){
@@ -144,10 +164,15 @@ const Shift: React.FC<IShiftProps> = ({date, ondissmiss, newShift=false}) => {
               </IonFabButton>
             </IonFab> */}
             <IonListHeader><h1>{date?.format("MMM DD, YYYY")}</h1></IonListHeader>
-            <IonReorderGroup disabled={false} onIonItemReorder={(event) => {setData(event.detail.complete(data))}}>
-              {data.map((e,i) => <IonItem  shape='round' key={i}>
-                    <IonGrid >
-
+            <IonReorderGroup  disabled={false} onIonItemReorder={(event) => {setData(event.detail.complete(data))}}>
+              {data.map((e,i) => <IonItem key={i}>
+                    <IonGrid>
+                    {
+                    e ?
+                    <>
+                    <div hidden={!deleteMode} className='overlay'>
+                          <IonButton onClick={() => {removeLotto(i)}} fill='clear'><IonIcon slot='icon-only' color='danger' size='large' icon={removeCircleSharp}/></IonButton> 
+                      </div>
                       <IonRow >
                         <IonLabel><p>{i+1} {e.name} - ${e.cost}</p></IonLabel>
                       </IonRow>
@@ -175,14 +200,27 @@ const Shift: React.FC<IShiftProps> = ({date, ondissmiss, newShift=false}) => {
                         </IonCol>
 
                       </IonRow>
+                      </>
+                    :
+                    <>
+                      <IonRow >
+                        <IonLabel><p>{i+1} EMPTY</p></IonLabel>
+                      </IonRow>
+                      <IonButton onClick={() => {nav.push("?modalOpened=true&lottriesOpen=true"); setLotteryModalOpen(true)}} className='full' expand='block' fill='clear'><IonIcon slot='start' icon={addSharp}/>Place Lottery</IonButton>
+                    </>
+                    }
                     </IonGrid>
                     <IonReorder />
               </ IonItem>)}
             </IonReorderGroup>
-            
-              <IonItem >
+              <IonItem lines='none'>
                 <IonGrid>
                   <IonButton onClick={() => {nav.push("?modalOpened=true&lottriesOpen=true"); setLotteryModalOpen(true)}} fill='clear' expand='block'><IonIcon slot='start' icon={addSharp}/>New Slot</IonButton>
+                </IonGrid> 
+              </IonItem>
+              <IonItem >
+                <IonGrid>
+                  <IonButton onClick={() => {setDeleteMode(!deleteMode)}} color='danger' expand='block' fill={deleteMode ? 'solid': 'clear'}><IonIcon hidden={deleteMode} slot='start' icon={removeSharp} />{deleteMode? 'Cancel' : 'Remove Slot'}</IonButton>
                 </IonGrid> 
               </IonItem>
 

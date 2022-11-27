@@ -1,8 +1,8 @@
 .lottery-img{
     max-height: 200px;
-  }
+}
   
-  .card-header{
-    background-color: var(--ion-color-light);
-    opacity: 96%;
-  }
+.card-header{
+  background-color: var(--ion-color-light);
+  opacity: 96%;
+}

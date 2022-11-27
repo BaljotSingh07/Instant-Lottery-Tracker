@@ -1,4 +1,5 @@
-import { IonHeader, IonToolbar, IonButton, IonTitle, IonContent, IonNote, IonList, IonItem, IonCard, IonImg, IonCardHeader, IonCardTitle, IonCardSubtitle, IonListHeader, IonSearchbar, IonThumbnail, IonSelect, IonSelectOption  } from "@ionic/react"
+import { IonHeader, IonToolbar, IonButton, IonTitle, IonContent, IonNote, IonList, IonItem, IonCard, IonImg, IonCardHeader, IonCardTitle, IonCardSubtitle, IonListHeader, IonSearchbar, IonThumbnail, IonSelect, IonSelectOption, IonText, IonIcon  } from "@ionic/react"
+import { cloudDownloadSharp } from "ionicons/icons"
 import { useEffect, useState } from "react"
 import { ILottery } from "../functions/functions"
 import { getAllLottries, ILotterySelect } from "../functions/function_lottries"
@@ -47,6 +48,9 @@ const Lottries: React.FC<ILotteryView> = ({ondissmiss}) => {
                 <IonSelectOption value={null}>All</IonSelectOption>
                 {costs.map((e,i) => <IonSelectOption key={i} value={e}>$ {e}</IonSelectOption>)}
             </IonSelect>
+            <IonItem lines="none">
+                <IonNote><IonIcon icon={cloudDownloadSharp}/>11/25/2022</IonNote>
+            </IonItem>
             {lottries.map((e,i) =>
             <div key={i} >
             {(!filter || e.name.toLowerCase().includes(filter.toLowerCase())) && (!costFilter || e.cost === costFilter) ? 

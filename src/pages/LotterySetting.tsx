@@ -1,9 +1,14 @@
-import { IonPage, IonContent, IonList, IonListHeader, IonItem, IonNote, IonLabel, IonTitle, IonGrid, IonRow, IonCol, IonInput, IonButton, IonItemDivider } from "@ionic/react"
+import { IonPage, IonContent, IonList, IonListHeader, IonItem, IonNote, IonLabel, IonTitle, IonGrid, IonRow, IonCol, IonInput, IonButton, IonItemDivider, IonIcon } from "@ionic/react"
+import { addSharp } from "ionicons/icons"
 import { useState } from "react"
 import MyHeader from "../components/Header"
 
 const LotterySetting:React.FC = () => {
     const [data, setData] = useState([{cost: 1, endingnumber: 399},{cost: 2, endingnumber: 299},{cost: 3, endingnumber: 99}, ])
+
+    function addNewSetting(){
+        setData([...data, {cost: 0, endingnumber: 0}])
+    }
 
     return(
         <IonPage id="main-content">
@@ -34,7 +39,7 @@ const LotterySetting:React.FC = () => {
                 )}
                 <IonItem >
                     <IonGrid fixed>
-                        <IonButton size="small" fill="clear" expand="block">+ New Slot</IonButton>
+                        <IonButton size="small" fill="clear" onClick={addNewSetting} expand="block"><IonIcon icon={addSharp}/>New Slot</IonButton>
                     </IonGrid>
                 </IonItem>
                 <IonItem lines="none">

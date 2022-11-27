@@ -1,12 +1,12 @@
 import dayjs from 'dayjs'
 
-export interface ILottery{
+export type ILottery = {
     name: string,
     prev : number,
     cur : number,
     sale : number,
     cost : number
-}
+} | null
   
 export interface ISummary{
     lotto: number,
@@ -36,6 +36,7 @@ data : [
     date : dayjs('2022-10-30'),
     lottos : [{name: "Blackjack", cost : 1, cur: 10, prev: 0, sale: 10}, 
             {name: "Holiday", cost : 2, cur: 5, prev: 0, sale: 10}, 
+            null, 
             {name: "Packers", cost : 3, cur: 3, prev: 0, sale: 9}, 
         ],
     summaray : {
@@ -67,7 +68,11 @@ export function getPrevShiftByDate(date: dayjs.Dayjs) : IShift{
     if(shift){
         const newShift:IShift = {date: date, summaray: {lotto: 0, online: 0, total: 0}, notes: "Cash: $", lottos: []}
         shift.lottos.forEach(e => {
+            if(!e){
+                newShift.lottos.push(null)
+            }else{
             newShift.lottos.push({name: e.name, cost: e.cost, cur: e.cur, prev: e.cur, sale: 0})
+            }
         })
         return newShift
     }else{
