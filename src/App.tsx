@@ -2,7 +2,7 @@ import { Redirect, Route } from 'react-router-dom';
 import { IonApp, IonRouterOutlet, setupIonicReact, IonTabs, IonTabBar, IonTabButton, IonLabel, IonIcon} from '@ionic/react';
 import { IonReactHashRouter, IonReactRouter } from '@ionic/react-router';
 import { homeSharp, settingsSharp, ticketSharp, logOutSharp } from 'ionicons/icons';
-import Home2 from './pages/Home2';
+import Home from './pages/Home';
 
 /* Core CSS required for Ionic components to work properly */
 import '@ionic/react/css/core.css';
@@ -43,7 +43,7 @@ const App: React.FC = () => {
     <IonRouterOutlet>
    
       <Route exact path="/home">
-        <Home2 />
+        <Home />
       </Route>
       <Route exact path="/">
         <Redirect to="/home" />

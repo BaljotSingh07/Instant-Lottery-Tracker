@@ -1,4 +1,4 @@
-import { IonPage, IonContent, IonList, IonListHeader, IonItem, IonNote, IonLabel, IonTitle, IonGrid, IonRow, IonCol, IonInput, IonButton, IonItemDivider, IonIcon } from "@ionic/react"
+import { IonPage, IonContent, IonList, IonListHeader, IonItem, IonLabel, IonGrid, IonRow, IonCol, IonInput, IonButton, IonIcon } from "@ionic/react"
 import { addSharp } from "ionicons/icons"
 import { useState } from "react"
 import MyHeader from "../components/Header"

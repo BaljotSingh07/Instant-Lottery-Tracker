@@ -1,4 +1,4 @@
-import { IonContent, IonHeader, IonTitle, IonToolbar, IonReorder, IonReorderGroup, IonItem, IonLabel, IonGrid, IonRow, IonCol, IonButton, IonIcon, IonInput, IonList, IonListHeader, IonTextarea, useIonAlert, IonLoading, useIonToast, IonModal, useIonViewDidLeave, IonItemDivider } from '@ionic/react';
+import { IonContent, IonHeader, IonTitle, IonToolbar, IonReorder, IonReorderGroup, IonItem, IonLabel, IonGrid, IonRow, IonCol, IonButton, IonIcon, IonInput, IonList, IonListHeader, IonTextarea, useIonAlert, IonLoading, useIonToast, IonModal } from '@ionic/react';
 import React, { useEffect, useRef, useState } from 'react';
 import { useIonViewWillLeave } from '@ionic/react';
 import { checkmarkSharp, addSharp, removeSharp, removeCircleSharp } from 'ionicons/icons';
@@ -112,14 +112,10 @@ const Shift: React.FC<IShiftProps> = ({date, ondissmiss, newShift=false}) => {
     if(date){
       const result = setShiftByDate(date, {date: date, lottos: data, notes:notes, summaray: summaryData})
       if(result){
-        presentToast({message: "Shift set.", icon: checkmarkSharp, duration: 3000})
+        presentToast({message: "Shift set.", icon: checkmarkSharp, duration: 3000, color: 'success'})
         ondissmiss({...summaryData, date: date, notes: notes})
       }
     }
-  }
-
-  function scrollToBottom(){
-    ionContentRef?.current?.scrollToBottom(2000);
   }
 
   useEffect(() => {
@@ -206,7 +202,7 @@ const Shift: React.FC<IShiftProps> = ({date, ondissmiss, newShift=false}) => {
                       <IonRow >
                         <IonLabel><p>{i+1} EMPTY</p></IonLabel>
                       </IonRow>
-                      <IonButton onClick={() => {nav.push("?modalOpened=true&lottriesOpen=true"); setLotteryModalOpen(true)}} className='full' expand='block' fill='clear'><IonIcon slot='start' icon={addSharp}/>Place Lottery</IonButton>
+                      <IonButton onClick={() => {nav.push("?modalOpened=true&lottriesOpen=true"); setLotteryModalOpen(true)}} className='full' expand='block' fill='clear'><IonIcon slot='start' icon={addSharp}/>Add</IonButton>
                     </>
                     }
                     </IonGrid>

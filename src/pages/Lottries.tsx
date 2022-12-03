@@ -1,4 +1,4 @@
-import { IonHeader, IonToolbar, IonButton, IonTitle, IonContent, IonNote, IonList, IonItem, IonCard, IonImg, IonCardHeader, IonCardTitle, IonCardSubtitle, IonListHeader, IonSearchbar, IonThumbnail, IonSelect, IonSelectOption, IonText, IonIcon  } from "@ionic/react"
+import { IonHeader, IonToolbar, IonButton, IonTitle, IonContent, IonNote, IonList, IonItem, IonCard, IonImg, IonCardHeader, IonCardTitle, IonCardSubtitle, IonSearchbar, IonSelect, IonSelectOption, IonIcon  } from "@ionic/react"
 import { cloudDownloadSharp } from "ionicons/icons"
 import { useEffect, useState } from "react"
 import { ILottery } from "../functions/functions"
