@@ -1,254 +1,259 @@
-import { IonContent, IonHeader, IonTitle, IonToolbar, IonReorder, IonReorderGroup, IonItem, IonLabel, IonGrid, IonRow, IonCol, IonButton, IonIcon, IonInput, IonList, IonListHeader, IonTextarea, useIonAlert, IonLoading, useIonToast, IonModal } from '@ionic/react';
-import React, { useEffect, useRef, useState } from 'react';
-import { useIonViewWillLeave } from '@ionic/react';
-import { checkmarkSharp, addSharp, removeSharp, removeCircleSharp } from 'ionicons/icons';
-import {getShiftByDate, setShiftByDate ,ILottery, ISummary, IHistory, IShift, getPrevShiftByDate} from '../functions/functions';
-import dayjs from 'dayjs';
-import './Shift.css';
-import Lottries from './Lottries';
-import { useLocation, useHistory } from 'react-router';
+import { IonContent, IonHeader, IonTitle, IonToolbar, IonReorder, IonReorderGroup, IonItem, IonLabel, IonGrid, IonButton, IonIcon, IonInput, IonList, IonListHeader, IonTextarea, IonLoading, useIonToast, IonModal } from "@ionic/react";
+import React, { useEffect, useRef, useState } from "react";
+import { checkmarkSharp, addSharp, removeSharp } from "ionicons/icons";
+import { getShiftByDate, setShiftByDate, ILotteryPack, ISummary, IHistory, IShift, getPrevShiftByDate } from "../functions/functions";
+import dayjs from "dayjs";
+import "./Shift.css";
+import Lottries from "./Lottries";
+import { useLocation, useHistory } from "react-router";
+import ShiftLotteryRow from "../components/ShiftLotteryRow";
 
-interface IShiftProps{
-  date: dayjs.Dayjs | undefined,
-  newShift?: boolean ,
-  ondissmiss: (newSummary: IHistory | undefined) => any,
+interface IShiftProps {
+  date: dayjs.Dayjs | undefined;
+  creatingANewShift?: boolean;
+  ondissmiss: (newSummary: IHistory | undefined) => any;
 }
 
-const Shift: React.FC<IShiftProps> = ({date, ondissmiss, newShift=false}) => {
-  const [data, setData] = useState<ILottery[]>([])
-  const [summaryData, setSummaryData] = useState<ISummary>({lotto: 0, online: 0, total: 0})
-  const [notes, setNotes] = useState("")
-  const [presentToast] = useIonToast()
-  const [presentAlert] = useIonAlert()
-  const [lotteryModalOpen, setLotteryModalOpen] = useState<boolean>(false)
-  const [loadingScreen, setLoadingScreen] = useState(true)
-  const [dirtyPage, setDirtyPage] = useState<Boolean>(false)
-  const [deleteMode, setDeleteMode] = useState(false)
-  const ionContentRef = useRef<HTMLIonContentElement>(null)
-  const nav = useHistory()
-  const location = useLocation()
+const Shift: React.FC<IShiftProps> = ({ date, ondissmiss, creatingANewShift = false }) => {
+  const [lotteries, setLotteries] = useState<ILotteryPack[]>([]);
+  const [summaryData, setSummaryData] = useState<ISummary>({
+    lotto: 0,
+    online: 0,
+    total: 0,
+  });
+  const [notes, setNotes] = useState("");
+  const [presentToast] = useIonToast();
+  const [lotteryModalState, setLotteryModalState] = useState<{open: boolean, putAtIndex?: number}>({open: false});
+  const [loadingScreen, setLoadingScreen] = useState(true);
+  const [deleteMode, setDeleteMode] = useState(false);
+  const ionContentRef = useRef<HTMLIonContentElement>(null);
+  const nav = useHistory();
+  const location = useLocation();
 
-  function addORsub(index: number, addORsub: "add" | "sub"){
-    const clonedLottery: ILottery = Object.assign({}, data[index])
-    const clonedSummary: ISummary = Object.assign({}, summaryData)
-    const cloneData = [...data]
-    clonedSummary.lotto -= (clonedLottery.cur - clonedLottery.prev) * clonedLottery.cost
-    if (addORsub === "add")
-      clonedLottery.cur += 1
-    else
-      clonedLottery.cur -= 1
-    clonedLottery.sale = (clonedLottery.cur - clonedLottery.prev) * clonedLottery.cost
-    clonedSummary.lotto += clonedLottery.sale
-    clonedSummary.total = clonedSummary.lotto + clonedSummary.online
-    cloneData[index] = clonedLottery
-    setData(cloneData)
-    setSummaryData(clonedSummary)
+  function addORsub(index: number, addORsub: "add" | "sub") {
+    let currentlotteryNumber = lotteries[index]?.cur;
+    if (currentlotteryNumber === undefined) return;
+    if (addORsub === "add") currentlotteryNumber += 1;
+    else currentlotteryNumber -= 1;
+    changeCurrentLotteryNumber(index, currentlotteryNumber);
   }
 
-  function onLotteryChange(e : any, index : number){
-    let intValueChange: number = parseInt(e.target.value)
-    if(!intValueChange){
-      intValueChange = 0
+  function onCurrentLotteryNumberChange(e: any, index: number) {
+    let intValueChange: number = parseInt(e.target.value);
+    if (!intValueChange) {
+      intValueChange = 0;
     }
-    const clonedLottery: ILottery = Object.assign({}, data[index])
-    const clonedSummary: ISummary = Object.assign({}, summaryData)
-    const cloneData = [...data]
-    clonedSummary.lotto -= (clonedLottery.cur - clonedLottery.prev) * clonedLottery.cost
-    clonedLottery.cur = intValueChange
-    clonedLottery.sale = (clonedLottery.cur - clonedLottery.prev) * clonedLottery.cost
-    clonedSummary.lotto += clonedLottery.sale
-    clonedSummary.total = clonedSummary.lotto + clonedSummary.online
-    cloneData[index] = clonedLottery
-    setData(cloneData)
-    setSummaryData(clonedSummary)
+    changeCurrentLotteryNumber(index, intValueChange);
   }
 
-  function refreshSummary(e : any){
-    const clonedSummary: ISummary = Object.assign({}, summaryData)
-    let intValue: number = parseFloat(e.target.value.replace('$', ''))
-    if(!intValue)
-      intValue = 0.0
-    clonedSummary.online = intValue
-    clonedSummary.total = clonedSummary.lotto + intValue
-    setSummaryData(clonedSummary)
+  function changeCurrentLotteryNumber(index: number, currentLotteryNumber: number) {
+    const clonedLottery: ILotteryPack = Object.assign({}, lotteries[index]);
+    const clonedSummary: ISummary = Object.assign({}, summaryData);
+    const cloneData = [...lotteries];
+    clonedSummary.lotto -= (clonedLottery.cur - clonedLottery.prev) * clonedLottery.cost;
+    clonedLottery.cur = currentLotteryNumber;
+    clonedLottery.sale = (clonedLottery.cur - clonedLottery.prev) * clonedLottery.cost;
+    clonedSummary.lotto += clonedLottery.sale;
+    clonedSummary.total = clonedSummary.lotto + clonedSummary.online;
+    cloneData[index] = clonedLottery;
+    setLotteries(cloneData);
+    setSummaryData(clonedSummary);
   }
 
-  function focusOnNextInput(index: number){
-    const nextInput : HTMLIonInputElement | null = document.getElementById(index + "Focus") as HTMLIonInputElement
-    nextInput.value = ''
-    nextInput?.setFocus()
+  function onOnlineLotteryChange(e: any) {
+    const clonedSummary: ISummary = Object.assign({}, summaryData);
+    let intValue: number = parseFloat(e.target.value.replace("$", ""));
+    if (!intValue) intValue = 0.0;
+    clonedSummary.online = intValue;
+    clonedSummary.total = clonedSummary.lotto + intValue;
+    setSummaryData(clonedSummary);
   }
 
-  function lotteryModalDissmised(newLottery: ILottery | undefined){
-    setLotteryModalOpen(false)
-    nav.replace("?modalOpened=true")
-    if(newLottery){
-      const clonedShift = [...data]
-      clonedShift.push(newLottery)
-      setData(clonedShift)
+  function lotteryModalDissmised(newLottery: ILotteryPack | undefined) {
+    setLotteryModalState({open: false});
+    nav.replace("?modalOpened=true");
+    if (newLottery) {
+      const clonedShift = [...lotteries];
+      if(lotteryModalState.putAtIndex){
+        clonedShift[lotteryModalState.putAtIndex] = newLottery
+      }else{
+        clonedShift.push(newLottery);
+      }
+      setLotteries(clonedShift);
     }
   }
 
-  function removeLotto(i: number){
-    const cloneData = [...data]
-    if(i === cloneData.length - 1){
-      cloneData.pop()
-      for(let i = cloneData.length-1; i >= 0; i--){
-        console.log(cloneData[i])
-        if(cloneData[i] === null){
-          cloneData.pop()
-        }else{
-          break 
+  function removeLotteryRow(i: number) {
+    const cloneData = [...lotteries];
+    if (i === cloneData.length - 1) {
+      cloneData.pop();
+      for (let i = cloneData.length - 1; i >= 0; i--) {
+        console.log(cloneData[i]);
+        if (cloneData[i] === null) {
+          cloneData.pop();
+        } else {
+          break;
         }
       }
-    }else{
-      cloneData[i] = null
+    } else {
+      cloneData[i] = null;
     }
-    setData(cloneData)
-    setDeleteMode(false)
+    setLotteries(cloneData);
+    setDeleteMode(false);
   }
 
-  function finish(){
-    if(date){
-      const result = setShiftByDate(date, {date: date, lottos: data, notes:notes, summaray: summaryData})
-      if(result){
-        presentToast({message: "Shift set.", icon: checkmarkSharp, duration: 3000, color: 'success'})
-        ondissmiss({...summaryData, date: date, notes: notes})
+  function finish() {
+    if (date) {
+      const result = setShiftByDate(date, {
+        date: date,
+        lottos: lotteries,
+        notes: notes,
+        summaray: summaryData,
+      });
+      if (result) {
+        presentToast({
+          message: "Shift set.",
+          icon: checkmarkSharp,
+          duration: 3000,
+          color: "success",
+        });
+        ondissmiss({ ...summaryData, date: date, notes: notes });
       }
     }
   }
 
   useEffect(() => {
-    if(!location.search.includes('lottriesOpen=true')) {
-      setLotteryModalOpen(false)
-   }
-  },[location])
-  
+    if (!location.search.includes("lottriesOpen=true")) {
+      setLotteryModalState({open: false});
+    }
+  }, [location]);
+
   useEffect(() => {
-    if(!date){
-      return
+    if (!date) return;
+
+    let shift: IShift | undefined = undefined;
+    if (creatingANewShift) {
+      shift = getPrevShiftByDate(date);
+    } else {
+      shift = getShiftByDate(date);
     }
-    let shift:IShift | undefined = undefined
-    if(newShift){
-      shift = getPrevShiftByDate(date)
-    }else{
-      shift = getShiftByDate(date)
+    if (shift && shift.lottos) {
+      setLotteries(shift.lottos);
+      setSummaryData(shift.summaray);
+      setNotes(shift.notes);
+      setLoadingScreen(false);
     }
-    if(shift && shift.lottos){
-      setData(shift.lottos)
-      setSummaryData(shift.summaray)
-      setNotes(shift.notes)
-      setLoadingScreen(false)
-    }else{
-      presentAlert({header: "ERROR", subHeader: "No previous shift found.", message: "If this is your first time add the shift please ignore this message. If its not, it is not safe to continue.", buttons:['Ok']})
-    }
-  },[])
+  }, []);
 
   return (
     <>
-        <IonHeader>
-          <IonToolbar>
-            <IonButton onClick={() => {ondissmiss(undefined)}} slot='end' size={'small'} color={'danger'} fill={'clear'}>Cancel</IonButton>
-            <IonTitle>{newShift ? "New Shift " : "View Shift"} {date?.format("MM/DD/YY")}</IonTitle>
-          </IonToolbar>
-        </IonHeader>
-        <IonContent ref={ionContentRef} className="ion-padding">
-            <IonLoading isOpen={loadingScreen}/>
-            {/* <IonFab slot='fixed' vertical='top' horizontal='end'>
-              <IonFabButton color={'light'} size='small'>
-                <IonIcon  icon={arrowDownSharp}/>
-              </IonFabButton>
-            </IonFab> */}
-            <IonListHeader><h1>{date?.format("MMM DD, YYYY")}</h1></IonListHeader>
-            <IonReorderGroup  disabled={false} onIonItemReorder={(event) => {setData(event.detail.complete(data))}}>
-              {data.map((e,i) => <IonItem key={i}>
-                    <IonGrid>
-                    {
-                    e ?
-                    <>
-                    <div hidden={!deleteMode} className='overlay'>
-                          <IonButton onClick={() => {removeLotto(i)}} fill='clear'><IonIcon slot='icon-only' color='danger' size='large' icon={removeCircleSharp}/></IonButton> 
-                      </div>
-                      <IonRow >
-                        <IonLabel><p>{i+1} {e.name} - ${e.cost}</p></IonLabel>
-                      </IonRow>
-
-                      <IonRow>
-
-                        <IonCol sizeMd='5' sizeLg='5' sizeXs='3'>
-                        <IonItem lines='none'>
-                          <IonLabel><p>{e.prev}</p></IonLabel>
-                          </IonItem>
-                        </IonCol>
-
-                        <IonCol sizeMd='3' sizeLg='3' sizeXs='9'>
-                        <IonItem lines='none'>
-                          <IonButton fill='clear' onClick={() => addORsub(i, "sub")} >-</IonButton>
-                            <IonInput defaultValue={200} onIonChange={(e) => {onLotteryChange(e,i)}} placeholder={e.prev.toString()} clearOnEdit size={200} id={i + "Focus"} onKeyUp={(e) => {if(e.code === 'Enter') focusOnNextInput(i+1)}} class='current-lottery-label' value={e.cur}></IonInput>
-                          <IonButton onClick={() => addORsub(i, "add")}>+</IonButton>
-                        </IonItem>
-                        </IonCol>
-
-                        <IonCol  >
-                          <IonItem lines='none'>
-                          <IonLabel slot='end'>$ {e.sale}</IonLabel>
-                          </IonItem>
-                        </IonCol>
-
-                      </IonRow>
-                      </>
-                    :
-                    <>
-                      <IonRow >
-                        <IonLabel><p>{i+1} EMPTY</p></IonLabel>
-                      </IonRow>
-                      <IonButton onClick={() => {nav.push("?modalOpened=true&lottriesOpen=true"); setLotteryModalOpen(true)}} className='full' expand='block' fill='clear'><IonIcon slot='start' icon={addSharp}/>Add</IonButton>
-                    </>
-                    }
-                    </IonGrid>
-                    <IonReorder />
-              </ IonItem>)}
-            </IonReorderGroup>
-              <IonItem lines='none'>
-                <IonGrid>
-                  <IonButton onClick={() => {nav.push("?modalOpened=true&lottriesOpen=true"); setLotteryModalOpen(true)}} fill='clear' expand='block'><IonIcon slot='start' icon={addSharp}/>New Slot</IonButton>
-                </IonGrid> 
-              </IonItem>
-              <IonItem >
-                <IonGrid>
-                  <IonButton onClick={() => {setDeleteMode(!deleteMode)}} color='danger' expand='block' fill={deleteMode ? 'solid': 'clear'}><IonIcon hidden={deleteMode} slot='start' icon={removeSharp} />{deleteMode? 'Cancel' : 'Remove Slot'}</IonButton>
-                </IonGrid> 
-              </IonItem>
-
-            <IonList lines='full'>
-              <IonListHeader>Summary</IonListHeader>
-
-              <IonItem>
-                <IonLabel position='stacked'>Lotto Sale</IonLabel>
-                <IonInput disabled placeholder='$0' value={'$ ' + summaryData.lotto}></IonInput>
-              </IonItem>
-
-              <IonItem>
-                <IonLabel position='stacked'>Online Sale</IonLabel>
-                <IonInput debounce={500} onIonChange={refreshSummary} value={'$ ' + summaryData.online} placeholder='$0'></IonInput>
-              </IonItem>
-
-              <IonItem>
-                <IonLabel position='stacked'>Total Sale</IonLabel>
-                <IonInput disabled placeholder='$0' value={'$ ' + summaryData.total}></IonInput>
-              </IonItem>
-            </IonList>
-
-            <IonItem>
-              <IonLabel position='stacked'>Notes</IonLabel>
-              <IonTextarea onIonChange={(e) => setNotes(e.target.value ? e.target.value : "")} rows={5} value={notes}></IonTextarea>
+      <IonHeader>
+        <IonToolbar>
+          <IonButton
+            onClick={() => {
+              ondissmiss(undefined);
+            }}
+            slot="end"
+            size={"small"}
+            color={"danger"}
+            fill={"clear"}>
+            Cancel
+          </IonButton>
+          <IonTitle>
+            {creatingANewShift ? "New Shift " : "View Shift"} {date?.format("MM/DD/YY")}
+          </IonTitle>
+        </IonToolbar>
+      </IonHeader>
+      <IonContent ref={ionContentRef} className="ion-padding">
+        <IonLoading isOpen={loadingScreen} />
+        <IonListHeader>
+          <h1>{date?.format("MMM DD, YYYY")}</h1>
+        </IonListHeader>
+        <IonReorderGroup
+          disabled={false}
+          onIonItemReorder={(event) => {
+            setLotteries(event.detail.complete(lotteries));
+          }}>
+          {lotteries.map((e, i) => (
+            <IonItem key={i}>
+              <IonGrid>
+                <ShiftLotteryRow
+                  LotteryPack={e}
+                  index={i}
+                  addNewLotteryPack={() => {
+                    nav.push("?modalOpened=true&lottriesOpen=true");
+                    setLotteryModalState({open: true, putAtIndex: i});
+                  }}
+                  onCurrentLotteryNumberChange={onCurrentLotteryNumberChange}
+                  addOrSubCurrentLotteryNumber={addORsub}
+                  deleteMode={deleteMode}
+                  removeLotteryRow={removeLotteryRow}
+                />
+              </IonGrid>
+              <IonReorder />
             </IonItem>
-            
-            <IonButton expand='full' fill='clear' onClick={finish}>Finish</IonButton>
-            <IonModal onIonModalWillDismiss={() => lotteryModalDissmised(undefined)} isOpen={lotteryModalOpen}>
-                <Lottries ondissmiss={lotteryModalDissmised}/>
-            </IonModal>
-        </IonContent>
+          ))}
+        </IonReorderGroup>
+        <IonItem lines="none">
+          <IonGrid>
+            <IonButton
+              onClick={() => {
+                nav.push("?modalOpened=true&lottriesOpen=true");
+                setLotteryModalState({open: true});
+              }}
+              fill="clear"
+              expand="block">
+              <IonIcon slot="start" icon={addSharp} />
+              New Slot
+            </IonButton>
+          </IonGrid>
+        </IonItem>
+        <IonItem>
+          <IonGrid>
+            <IonButton
+              onClick={() => {
+                setDeleteMode(!deleteMode);
+              }}
+              color="danger"
+              expand="block"
+              fill={deleteMode ? "solid" : "clear"}>
+              <IonIcon hidden={deleteMode} slot="start" icon={removeSharp} />
+              {deleteMode ? "Cancel" : "Remove Slot"}
+            </IonButton>
+          </IonGrid>
+        </IonItem>
+
+        <IonList lines="full">
+          <IonListHeader>Summary</IonListHeader>
+
+          <IonItem>
+            <IonLabel position="stacked">Lotto Sale</IonLabel>
+            <IonInput disabled placeholder="$0" value={"$ " + summaryData.lotto}></IonInput>
+          </IonItem>
+
+          <IonItem>
+            <IonLabel position="stacked">Online Sale</IonLabel>
+            <IonInput debounce={500} onIonChange={onOnlineLotteryChange} value={"$ " + summaryData.online} placeholder="$0"></IonInput>
+          </IonItem>
+
+          <IonItem>
+            <IonLabel position="stacked">Total Sale</IonLabel>
+            <IonInput disabled placeholder="$0" value={"$ " + summaryData.total}></IonInput>
+          </IonItem>
+        </IonList>
+
+        <IonItem>
+          <IonLabel position="stacked">Notes</IonLabel>
+          <IonTextarea onIonChange={(e) => setNotes(e.target.value ? e.target.value : "")} rows={5} value={notes}></IonTextarea>
+        </IonItem>
+
+        <IonButton expand="full" fill="clear" onClick={finish}>
+          Finish
+        </IonButton>
+        <IonModal onIonModalWillDismiss={() => lotteryModalDissmised(undefined)} isOpen={lotteryModalState.open}>
+          <Lottries ondissmiss={lotteryModalDissmised} />
+        </IonModal>
+      </IonContent>
     </>
   );
 };

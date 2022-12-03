@@ -1,12 +1,12 @@
 import { IonHeader, IonToolbar, IonButton, IonTitle, IonContent, IonNote, IonList, IonItem, IonCard, IonImg, IonCardHeader, IonCardTitle, IonCardSubtitle, IonSearchbar, IonSelect, IonSelectOption, IonIcon  } from "@ionic/react"
 import { cloudDownloadSharp } from "ionicons/icons"
 import { useEffect, useState } from "react"
-import { ILottery } from "../functions/functions"
+import { ILotteryPack } from "../functions/functions"
 import { getAllLottries, ILotterySelect } from "../functions/function_lottries"
 import './Lottries.css'
 
 interface ILotteryView{
-    ondissmiss?: (newLottery: ILottery | undefined) => any,
+    ondissmiss?: (newLottery: ILotteryPack | undefined) => any,
 }
 
 const Lottries: React.FC<ILotteryView> = ({ondissmiss}) => {
