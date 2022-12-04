@@ -1,12 +1,13 @@
-import { IonContent, IonHeader, IonTitle, IonToolbar, IonReorder, IonReorderGroup, IonItem, IonLabel, IonGrid, IonButton, IonIcon, IonInput, IonList, IonListHeader, IonTextarea, IonLoading, useIonToast, IonModal } from "@ionic/react";
+import { IonContent, IonHeader, IonTitle, IonToolbar, IonReorder, IonReorderGroup, IonItem, IonLabel, IonGrid, IonButton, IonIcon, IonInput, IonList, IonListHeader, IonTextarea, IonLoading, useIonToast, IonModal, useIonActionSheet } from "@ionic/react";
 import React, { useEffect, useRef, useState } from "react";
-import { checkmarkSharp, addSharp, removeSharp } from "ionicons/icons";
+import { checkmarkSharp, addSharp, trashBinOutline, ellipsisVerticalSharp, reorderThreeOutline } from "ionicons/icons";
 import { getShiftByDate, setShiftByDate, ILotteryPack, ISummary, IHistory, IShift, getPrevShiftByDate } from "../functions/functions";
 import dayjs from "dayjs";
 import "./Shift.css";
 import Lottries from "./Lottries";
 import { useLocation, useHistory } from "react-router";
 import ShiftLotteryRow from "../components/ShiftLotteryRow";
+import { OverlayEventDetail } from "@ionic/core";
 
 interface IShiftProps {
   date: dayjs.Dayjs | undefined;
@@ -23,9 +24,11 @@ const Shift: React.FC<IShiftProps> = ({ date, ondissmiss, creatingANewShift = fa
   });
   const [notes, setNotes] = useState("");
   const [presentToast] = useIonToast();
+  const [shiftActionSheet] = useIonActionSheet()
   const [lotteryModalState, setLotteryModalState] = useState<{open: boolean, putAtIndex?: number}>({open: false});
   const [loadingScreen, setLoadingScreen] = useState(true);
   const [deleteMode, setDeleteMode] = useState(false);
+  const [reorderMode, setReorderMode] = useState(false);
   const ionContentRef = useRef<HTMLIonContentElement>(null);
   const nav = useHistory();
   const location = useLocation();
@@ -145,6 +148,45 @@ const Shift: React.FC<IShiftProps> = ({ date, ondissmiss, creatingANewShift = fa
     }
   }, []);
 
+  function onShiftActionSheetDissmiss(detail: OverlayEventDetail<any>){
+    const buttonActions = detail.data.action
+    if(buttonActions === "reorder"){
+      setReorderMode(!reorderMode)
+    }else if(buttonActions === "new"){
+      nav.push("?modalOpened=true&lottriesOpen=true");
+      setLotteryModalState({open: true});
+    }else if(buttonActions === "delete"){
+      setDeleteMode(!deleteMode)
+    }
+  }
+  function presentShiftActionSheet(){
+    shiftActionSheet({
+      header: 'Shift Options',
+      buttons: [{
+        text: "Toggle Reorder",
+        icon: reorderThreeOutline,
+        data: {action: 'reorder'}
+      },{
+        text: "New Row",
+        icon: addSharp,
+        data: {action: 'new'}
+      },{
+        text: "Remove Row",
+        icon: trashBinOutline,
+        role: "destructive",
+        data: {action: 'delete'}
+      },
+      {
+        text: "Cancel",
+        role: "cancel",
+        data: {action: 'cancel'}
+      }],
+      onDidDismiss({detail}) {
+          onShiftActionSheetDissmiss(detail)
+      },
+    })
+  }
+
   return (
     <>
       <IonHeader>
@@ -168,9 +210,10 @@ const Shift: React.FC<IShiftProps> = ({ date, ondissmiss, creatingANewShift = fa
         <IonLoading isOpen={loadingScreen} />
         <IonListHeader>
           <h1>{date?.format("MMM DD, YYYY")}</h1>
+          <IonButton onClick={presentShiftActionSheet} className="header-with-icon"><IonIcon size="small" slot="icon-only" icon={ellipsisVerticalSharp}/></IonButton>
         </IonListHeader>
         <IonReorderGroup
-          disabled={false}
+          disabled={!reorderMode}
           onIonItemReorder={(event) => {
             setLotteries(event.detail.complete(lotteries));
           }}>
@@ -190,11 +233,11 @@ const Shift: React.FC<IShiftProps> = ({ date, ondissmiss, creatingANewShift = fa
                   removeLotteryRow={removeLotteryRow}
                 />
               </IonGrid>
-              <IonReorder />
+              <IonReorder slot="end"/>
             </IonItem>
           ))}
         </IonReorderGroup>
-        <IonItem lines="none">
+        {/* <IonItem lines="none">
           <IonGrid>
             <IonButton
               onClick={() => {
@@ -221,7 +264,7 @@ const Shift: React.FC<IShiftProps> = ({ date, ondissmiss, creatingANewShift = fa
               {deleteMode ? "Cancel" : "Remove Slot"}
             </IonButton>
           </IonGrid>
-        </IonItem>
+        </IonItem> */}
 
         <IonList lines="full">
           <IonListHeader>Summary</IonListHeader>
