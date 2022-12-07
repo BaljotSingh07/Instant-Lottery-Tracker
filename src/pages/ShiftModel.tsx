@@ -35,7 +35,7 @@ const Shift: React.FC<IShiftProps> = ({ date, ondissmiss, creatingANewShift = fa
 
   function addORsub(index: number, addORsub: "add" | "sub") {
     let currentlotteryNumber = lotteries[index]?.cur;
-    if (currentlotteryNumber === undefined) return;
+    if (currentlotteryNumber === undefined) return; // avoid add or removing with a row is null
     if (addORsub === "add") currentlotteryNumber += 1;
     else currentlotteryNumber -= 1;
     changeCurrentLotteryNumber(index, currentlotteryNumber);
@@ -149,6 +149,8 @@ const Shift: React.FC<IShiftProps> = ({ date, ondissmiss, creatingANewShift = fa
   }, []);
 
   function onShiftActionSheetDissmiss(detail: OverlayEventDetail<any>){
+    if(!detail.data) return // the actions sheet was exited by backdrop
+
     const buttonActions = detail.data.action
     if(buttonActions === "reorder"){
       setReorderMode(!reorderMode)
@@ -237,35 +239,6 @@ const Shift: React.FC<IShiftProps> = ({ date, ondissmiss, creatingANewShift = fa
             </IonItem>
           ))}
         </IonReorderGroup>
-        {/* <IonItem lines="none">
-          <IonGrid>
-            <IonButton
-              onClick={() => {
-                nav.push("?modalOpened=true&lottriesOpen=true");
-                setLotteryModalState({open: true});
-              }}
-              fill="clear"
-              expand="block">
-              <IonIcon slot="start" icon={addSharp} />
-              New Slot
-            </IonButton>
-          </IonGrid>
-        </IonItem>
-        <IonItem>
-          <IonGrid>
-            <IonButton
-              onClick={() => {
-                setDeleteMode(!deleteMode);
-              }}
-              color="danger"
-              expand="block"
-              fill={deleteMode ? "solid" : "clear"}>
-              <IonIcon hidden={deleteMode} slot="start" icon={removeSharp} />
-              {deleteMode ? "Cancel" : "Remove Slot"}
-            </IonButton>
-          </IonGrid>
-        </IonItem> */}
-
         <IonList lines="full">
           <IonListHeader>Summary</IonListHeader>
 
