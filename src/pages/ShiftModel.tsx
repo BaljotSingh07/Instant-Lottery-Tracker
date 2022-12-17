@@ -146,7 +146,7 @@ const Shift: React.FC<IShiftProps> = ({ date, ondissmiss, creatingANewShift = fa
       setNotes(shift.notes);
       setLoadingScreen(false);
     }
-  }, []);
+  }, [date]);
 
   function onShiftActionSheetDissmiss(detail: OverlayEventDetail<any>){
     if(!detail.data) return // the actions sheet was exited by backdrop
@@ -209,7 +209,7 @@ const Shift: React.FC<IShiftProps> = ({ date, ondissmiss, creatingANewShift = fa
         </IonToolbar>
       </IonHeader>
       <IonContent ref={ionContentRef} className="ion-padding">
-        <IonLoading isOpen={loadingScreen} />
+        {/* <IonLoading isOpen={loadingScreen} /> */}
         <IonListHeader>
           <h1>{date?.format("MMM DD, YYYY")}</h1>
           <IonButton onClick={presentShiftActionSheet} className="header-with-icon"><IonIcon size="small" slot="icon-only" icon={ellipsisVerticalSharp}/></IonButton>

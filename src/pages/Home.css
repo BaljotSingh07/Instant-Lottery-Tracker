@@ -29,3 +29,11 @@
 .link{
     text-decoration: none;
 }
+
+ion-split-pane {
+    --side-min-width: min(50vw, 700px);
+  }
+
+#list-of-shifts{
+    width: 100%;
+}
