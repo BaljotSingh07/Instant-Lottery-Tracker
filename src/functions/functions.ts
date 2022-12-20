@@ -1,4 +1,6 @@
 import dayjs from "dayjs";
+import { db } from "./firebase";
+import { collection, doc, getDoc, getDocs, limit, orderBy, query, setDoc } from "firebase/firestore";
 
 export type ILotteryPack = {
   name: string;
@@ -15,10 +17,17 @@ export interface ISummary {
 }
 
 export interface IShift {
-  date: dayjs.Dayjs;
+  date: dayjs.Dayjs ;
   lottos: Array<ILotteryPack>;
   summaray: ISummary;
   notes: string;
+}
+
+export interface IFirestoreShift{
+  Date: Date;
+  Lottos: Array<ILotteryPack>;
+  Summary: ISummary;
+  Notes: string;
 }
 
 export interface IHistory extends ISummary {
@@ -59,47 +68,74 @@ const mockDatabase: IMockDatabase = {
   ],
 };
 
-export function getPrevShiftByDate(date: dayjs.Dayjs): IShift {
-  const previousDate = date.subtract(1, "day");
-  let shift = mockDatabase.data.find((e) => e.date.isSame(previousDate, "day"));
-  if (shift) {
-    const newShift: IShift = { date: date, summaray: { lotto: 0, online: 0, total: 0 }, notes: "Cash: $", lottos: [] };
-    shift.lottos.forEach((e) => {
+export async function getPrevShiftByDate(date: dayjs.Dayjs){
+  const previousDate = date.subtract(1, "day").format("MM-DD-YYYY");
+  // let shift = mockDatabase.data.find((e) => e.date.isSame(previousDate, "day"));
+  // if (shift) {
+  //   const newShift: IShift = { date: date, summaray: { lotto: 0, online: 0, total: 0 }, notes: "Cash: $", lottos: [] };
+  //   shift.lottos.forEach((e) => {
+  //     if (!e) {
+  //       newShift.lottos.push(null);
+  //     } else {
+  //       newShift.lottos.push({ name: e.name, cost: e.cost, cur: e.cur, prev: e.cur, sale: 0 });
+  //     }
+  //   });
+  //   return newShift;
+  // } else {
+  //   shift = { date: date, lottos: [], notes: "Cash : $", summaray: { lotto: 0, online: 0, total: 0 } };
+  //   return shift;
+  // }
+
+  const prevDocData = (await getDoc(doc(db, 'Shifts', previousDate))).data()
+  let newShift: IShift = { date: date, lottos: [], notes: "Cash: $", summaray: { lotto: 0, online: 0, total: 0 } };
+  if (prevDocData) {
+    prevDocData.Lottos.forEach((e: ILotteryPack) => {
       if (!e) {
         newShift.lottos.push(null);
       } else {
         newShift.lottos.push({ name: e.name, cost: e.cost, cur: e.cur, prev: e.cur, sale: 0 });
       }
     });
-    return newShift;
-  } else {
-    shift = { date: date, lottos: [], notes: "Cash : $", summaray: { lotto: 0, online: 0, total: 0 } };
-    return shift;
   }
+  return newShift
 }
 
-export function getShiftByDate(date: dayjs.Dayjs): IShift | undefined {
-  const shift: IShift | undefined = mockDatabase.data.find((obj) => {
-    return obj.date.isSame(date);
-  });
-  return shift;
+export async function getShiftByDate(date: dayjs.Dayjs){
+  // const shift: IShift | undefined = mockDatabase.data.find((obj) => {
+  //   return obj.date.isSame(date);
+  // });
+  return getDoc(doc(db, 'Shifts', date.format('MM-DD-YYYY')))
+  .then(doc => {
+    const docData = doc.data()
+    if(!docData) return undefined
+    const returnData: IShift = {date : dayjs(docData.Date.toDate()), lottos : docData.Lottos, notes : docData.Notes, summaray : docData.Summary}
+    return returnData
+  })
 }
 
-export function setShiftByDate(date: dayjs.Dayjs, newShift: IShift): boolean {
-  let shift = getShiftByDate(date);
+export async function setShiftByDate(date: dayjs.Dayjs, newShift: IShift) {
+  // let shift = getShiftByDate(date);
 
-  if (shift) {
-    shift.lottos = newShift.lottos;
-    shift.summaray = newShift.summaray;
-    shift.notes = newShift.notes;
-  } else {
-    mockDatabase.data.unshift(newShift);
-  }
-  return true;
+  // if (shift) {
+  //   shift.lottos = newShift.lottos;
+  //   shift.summaray = newShift.summaray;
+  //   shift.notes = newShift.notes;
+  // } else {
+  //   mockDatabase.data.unshift(newShift);
+  // }
+  let ret = false;
+  const data: IFirestoreShift = {Date: newShift.date.toDate(), Lottos: newShift.lottos, Notes: newShift.notes, Summary: newShift.summaray}
+  await setDoc(doc(db, 'Shifts', newShift.date.format("MM-DD-YYYY")), data).then(() => {
+    ret = true
+  })
+  .catch(() => {
+    ret = false
+  })
+  return ret
 }
 
-export function updateOnlineByDate(date: dayjs.Dayjs, newSale: number): IHistory | false {
-  const shift = getShiftByDate(date);
+export async function updateOnlineByDate(date: dayjs.Dayjs, newSale: number){
+  const shift = await getShiftByDate(date);
   if (shift) {
     shift.summaray.online = newSale;
     shift.summaray.total = shift.summaray.lotto + newSale;
@@ -108,12 +144,24 @@ export function updateOnlineByDate(date: dayjs.Dayjs, newSale: number): IHistory
   return false;
 }
 
-export function getHistory(): Array<IHistory> {
+export async function getHistory() {
   const returnVal: Array<IHistory> = [];
-  mockDatabase.data.forEach((e) => {
-    returnVal.push({ date: e.date, lotto: e.summaray.lotto, online: e.summaray.online, total: e.summaray.total, notes: e.notes });
-  });
-  return returnVal;
+  // mockDatabase.data.forEach((e) => {
+  //   returnVal.push({ date: e.date, lotto: e.summaray.lotto, online: e.summaray.online, total: e.summaray.total, notes: e.notes });
+  // });
+  const q = query(collection(db, 'Shifts'), orderBy('Date', 'desc') ,limit(5))
+  return getDocs(q)
+  .then(docs => {
+    docs.docs.forEach((e) => {
+      const doc = e.data()
+      returnVal.push({ date: dayjs(doc.Date.toDate()), lotto: doc.Summary.lotto, online: doc.Summary.online, total: doc.Summary.total, notes: doc.Notes })
+    })
+    return returnVal
+  })
+  .catch(() => {
+    return returnVal
+  })
+  
 }
 
 export function printMockDatabase() {

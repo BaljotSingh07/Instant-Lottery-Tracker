@@ -35,11 +35,11 @@ const Home: React.FC = () => {
       buttons: [
         {
           text: "Save",
-          handler: (data) => {
+          handler: async (data) => {
             const floatData = parseFloat(data.online);
             let updateSucc = false;
             if (floatData) {
-              const updateOnlineResult = updateOnlineByDate(date, floatData);
+              const updateOnlineResult = await updateOnlineByDate(date, floatData);
               if (updateOnlineResult) {
                 const clonedShifts = [...shifts];
                 clonedShifts[i] = updateOnlineResult;
@@ -102,7 +102,7 @@ const Home: React.FC = () => {
 
   function handleRefresh(event: CustomEvent<RefresherEventDetail>) {
     setTimeout(() => {
-      setShifts(getHistory());
+      //setShifts(getHistory());
       event.detail.complete();
     }, 2000);
   }
@@ -114,7 +114,8 @@ const Home: React.FC = () => {
   }, [location]);
 
   useEffect(() => {
-    setShifts(getHistory());
+    getHistory()
+    .then(e => {setShifts(e)})
     setLoading(false);
   }, []);
 
@@ -130,7 +131,11 @@ const Home: React.FC = () => {
         <>
           <IonItem>
             <IonLabel position="stacked">
-              <h1>{shifts && shifts[0].date.subtract(1, "day").isSame(dayjs(), "day") ? "Today" : shifts[0].date.add(1, "day").format("MMM DD, YYYY")}</h1>
+              {shifts[0] ? 
+              <h1>{shifts[0].date.subtract(1, "day").isSame(dayjs(), "day") ? "Today" : shifts[0].date.add(1, "day").format("MMM DD, YYYY")}</h1>
+              :
+              <></>  
+            }
             </IonLabel>
 
             <IonGrid>

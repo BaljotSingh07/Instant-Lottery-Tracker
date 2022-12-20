@@ -1,4 +1,4 @@
-import { IonContent, IonHeader, IonTitle, IonToolbar, IonReorder, IonReorderGroup, IonItem, IonLabel, IonGrid, IonButton, IonIcon, IonInput, IonList, IonListHeader, IonTextarea, IonLoading, useIonToast, IonModal, useIonActionSheet } from "@ionic/react";
+import { IonContent, IonHeader, IonTitle, IonToolbar, IonReorder, IonReorderGroup, IonItem, IonLabel, IonGrid, IonButton, IonIcon, IonInput, IonList, IonListHeader, IonTextarea, IonLoading, useIonToast, IonModal, useIonActionSheet, IonProgressBar } from "@ionic/react";
 import React, { useEffect, useRef, useState } from "react";
 import { checkmarkSharp, addSharp, trashBinOutline, ellipsisVerticalSharp, reorderThreeOutline } from "ionicons/icons";
 import { getShiftByDate, setShiftByDate, ILotteryPack, ISummary, IHistory, IShift, getPrevShiftByDate } from "../functions/functions";
@@ -105,9 +105,9 @@ const Shift: React.FC<IShiftProps> = ({ date, ondissmiss, creatingANewShift = fa
     setDeleteMode(false);
   }
 
-  function finish() {
+  async function finish() {
     if (date) {
-      const result = setShiftByDate(date, {
+      const result = await setShiftByDate(date, {
         date: date,
         lottos: lotteries,
         notes: notes,
@@ -131,21 +131,29 @@ const Shift: React.FC<IShiftProps> = ({ date, ondissmiss, creatingANewShift = fa
     }
   }, [location]);
 
+  async function getShiftData(){
+    if(date){
+      setLoadingScreen(true);
+      
+      let shiftData: IShift | undefined;
+      if(creatingANewShift)
+        shiftData = await getPrevShiftByDate(date)
+      else
+        shiftData = await getShiftByDate(date)
+
+      if (shiftData && shiftData.lottos) {
+        setLotteries(shiftData.lottos);
+        setSummaryData(shiftData.summaray);
+        setNotes(shiftData.notes);
+        setLoadingScreen(false);
+      }
+
+    }
+  }
+
   useEffect(() => {
     if (!date) return;
-
-    let shift: IShift | undefined = undefined;
-    if (creatingANewShift) {
-      shift = getPrevShiftByDate(date);
-    } else {
-      shift = getShiftByDate(date);
-    }
-    if (shift && shift.lottos) {
-      setLotteries(shift.lottos);
-      setSummaryData(shift.summaray);
-      setNotes(shift.notes);
-      setLoadingScreen(false);
-    }
+    getShiftData()
   }, [date]);
 
   function onShiftActionSheetDissmiss(detail: OverlayEventDetail<any>){
@@ -209,7 +217,7 @@ const Shift: React.FC<IShiftProps> = ({ date, ondissmiss, creatingANewShift = fa
         </IonToolbar>
       </IonHeader>
       <IonContent ref={ionContentRef} className="ion-padding">
-        {/* <IonLoading isOpen={loadingScreen} /> */}
+      <IonProgressBar hidden={!loadingScreen} type="indeterminate" />
         <IonListHeader>
           <h1>{date?.format("MMM DD, YYYY")}</h1>
           <IonButton onClick={presentShiftActionSheet} className="header-with-icon"><IonIcon size="small" slot="icon-only" icon={ellipsisVerticalSharp}/></IonButton>
@@ -233,6 +241,7 @@ const Shift: React.FC<IShiftProps> = ({ date, ondissmiss, creatingANewShift = fa
                   addOrSubCurrentLotteryNumber={addORsub}
                   deleteMode={deleteMode}
                   removeLotteryRow={removeLotteryRow}
+                  isEmpty={true}
                 />
               </IonGrid>
               <IonReorder slot="end"/>

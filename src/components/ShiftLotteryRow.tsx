@@ -1,4 +1,4 @@
-import { IonRow, IonLabel, IonCol, IonItem, IonButton, IonInput, IonIcon } from "@ionic/react";
+import { IonRow, IonLabel, IonCol, IonItem, IonButton, IonInput, IonIcon, IonGrid } from "@ionic/react";
 import { addSharp, removeCircleSharp } from "ionicons/icons";
 import { ILotteryPack } from "../functions/functions";
 
@@ -10,9 +10,10 @@ interface IShiftLotteryRow {
   onCurrentLotteryNumberChange: (e: any, index: number) => void;
   addOrSubCurrentLotteryNumber: (index: number, addOrSub: "add" | "sub") => void;
   removeLotteryRow: (index: number) => void;
+  isEmpty: boolean;
 }
 
-const ShiftLotteryRow: React.FC<IShiftLotteryRow> = ({ LotteryPack, index, deleteMode, addNewLotteryPack, onCurrentLotteryNumberChange, addOrSubCurrentLotteryNumber, removeLotteryRow }) => {
+const ShiftLotteryRow: React.FC<IShiftLotteryRow> = ({ LotteryPack, index, deleteMode, addNewLotteryPack, onCurrentLotteryNumberChange, addOrSubCurrentLotteryNumber, removeLotteryRow, isEmpty }) => {
   function focusOnNextInput(index: number) {
     const nextInput: HTMLIonInputElement | null = document.getElementById(index + "Focus") as HTMLIonInputElement;
     nextInput.value = "";
@@ -37,14 +38,23 @@ const ShiftLotteryRow: React.FC<IShiftLotteryRow> = ({ LotteryPack, index, delet
 
   return (
     <>
-      <div hidden={!deleteMode} className="overlay">
+      <div hidden={!isEmpty} className="overlay">
+        {isEmpty ? 
+        <IonGrid >
+          <IonRow>
+            <IonCol ><IonButton fill="outline">Renew</IonButton></IonCol>
+            <IonCol ><IonButton fill="outline" color='success'>Add New</IonButton></IonCol>
+            <IonCol ><IonButton fill="clear" color='danger'>Undo</IonButton></IonCol>
+          </IonRow>
+        </IonGrid>
+        :
         <IonButton
           onClick={() => {
             removeLotteryRow(index);
           }}
           fill="clear">
           <IonIcon slot="icon-only" color="danger" size="large" icon={removeCircleSharp} />
-        </IonButton>
+        </IonButton>}
       </div>
       <IonRow>
         <IonLabel>
