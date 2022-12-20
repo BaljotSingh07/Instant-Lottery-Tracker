@@ -1,4 +1,4 @@
-# Instant-Lottery-Tracker
+# Noto
 ## Live Demo
 https://baljotsingh07.github.io/Noto/
 <br>
