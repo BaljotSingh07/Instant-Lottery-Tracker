@@ -1,4 +1,4 @@
-import { IonContent, IonHeader, IonTitle, IonToolbar, IonReorder, IonReorderGroup, IonItem, IonLabel, IonGrid, IonButton, IonIcon, IonInput, IonList, IonListHeader, IonTextarea, IonLoading, useIonToast, IonModal, useIonActionSheet, IonProgressBar } from "@ionic/react";
+import { IonContent, IonHeader, IonTitle, IonToolbar, IonReorder, IonReorderGroup, IonItem, IonLabel, IonGrid, IonButton, IonIcon, IonInput, IonList, IonListHeader, IonTextarea, IonLoading, useIonToast, IonModal, useIonActionSheet, IonProgressBar, useIonPopover } from "@ionic/react";
 import React, { useEffect, useRef, useState } from "react";
 import { checkmarkSharp, addSharp, trashBinOutline, ellipsisVerticalSharp, reorderThreeOutline } from "ionicons/icons";
 import { getShiftByDate, setShiftByDate, ILotteryPack, ISummary, IHistory, IShift, getPrevShiftByDate } from "../functions/functions";
@@ -8,6 +8,7 @@ import Lottries from "./Lottries";
 import { useLocation, useHistory } from "react-router";
 import ShiftLotteryRow from "../components/ShiftLotteryRow";
 import { OverlayEventDetail } from "@ionic/core";
+import ShiftLotteryRowActions from "../components/ShiftLotteryRowActions";
 
 interface IShiftProps {
   date: dayjs.Dayjs | undefined;
@@ -24,7 +25,7 @@ const Shift: React.FC<IShiftProps> = ({ date, ondissmiss, creatingANewShift = fa
   });
   const [notes, setNotes] = useState("");
   const [presentToast] = useIonToast();
-  const [shiftActionSheet] = useIonActionSheet()
+  const [presentShiftActions, dismissShiftActions] = useIonPopover(ShiftLotteryRowActions, {onHide: () => dismissShiftActions(), onDeleteClick: (i: number, e: number) => {console.log('delete clicked', i, e)}})
   const [lotteryModalState, setLotteryModalState] = useState<{open: boolean, putAtIndex?: number}>({open: false});
   const [loadingScreen, setLoadingScreen] = useState(true);
   const [deleteMode, setDeleteMode] = useState(false);
@@ -169,33 +170,6 @@ const Shift: React.FC<IShiftProps> = ({ date, ondissmiss, creatingANewShift = fa
       setDeleteMode(!deleteMode)
     }
   }
-  function presentShiftActionSheet(){
-    shiftActionSheet({
-      header: 'Shift Options',
-      buttons: [{
-        text: "Toggle Reorder",
-        icon: reorderThreeOutline,
-        data: {action: 'reorder'}
-      },{
-        text: "New Row",
-        icon: addSharp,
-        data: {action: 'new'}
-      },{
-        text: "Remove Row",
-        icon: trashBinOutline,
-        role: "destructive",
-        data: {action: 'delete'}
-      },
-      {
-        text: "Cancel",
-        role: "cancel",
-        data: {action: 'cancel'}
-      }],
-      onDidDismiss({detail}) {
-          onShiftActionSheetDissmiss(detail)
-      },
-    })
-  }
 
   return (
     <>
@@ -220,7 +194,6 @@ const Shift: React.FC<IShiftProps> = ({ date, ondissmiss, creatingANewShift = fa
       <IonProgressBar hidden={!loadingScreen} type="indeterminate" />
         <IonListHeader>
           <h1>{date?.format("MMM DD, YYYY")}</h1>
-          <IonButton onClick={presentShiftActionSheet} className="header-with-icon"><IonIcon size="small" slot="icon-only" icon={ellipsisVerticalSharp}/></IonButton>
         </IonListHeader>
         <IonReorderGroup
           disabled={!reorderMode}
@@ -242,6 +215,7 @@ const Shift: React.FC<IShiftProps> = ({ date, ondissmiss, creatingANewShift = fa
                   deleteMode={deleteMode}
                   removeLotteryRow={removeLotteryRow}
                   isEmpty={true}
+                  presentShiftActions={presentShiftActions}
                 />
               </IonGrid>
               <IonReorder slot="end"/>

@@ -36,13 +36,14 @@ const Home: React.FC = () => {
         {
           text: "Save",
           handler: async (data) => {
-            const floatData = parseFloat(data.online);
+            const onlineSale = parseFloat(data.online);
             let updateSucc = false;
-            if (floatData) {
-              const updateOnlineResult = await updateOnlineByDate(date, floatData);
+            if (onlineSale) {
+              const updateOnlineResult = await updateOnlineByDate(date, onlineSale, onlineSale + shifts[i].lotto);
               if (updateOnlineResult) {
                 const clonedShifts = [...shifts];
-                clonedShifts[i] = updateOnlineResult;
+                clonedShifts[i].online= onlineSale;
+                clonedShifts[i].total= onlineSale + clonedShifts[i].lotto;
                 setShifts(clonedShifts);
                 updateSucc = true;
               }

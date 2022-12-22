@@ -36,4 +36,5 @@ ion-split-pane {
 
 #list-of-shifts{
     width: 100%;
+    overflow: auto;
 }

@@ -1,5 +1,5 @@
 import { IonRow, IonLabel, IonCol, IonItem, IonButton, IonInput, IonIcon, IonGrid } from "@ionic/react";
-import { addSharp, removeCircleSharp } from "ionicons/icons";
+import { addSharp, ellipsisVerticalSharp, removeCircleSharp } from "ionicons/icons";
 import { ILotteryPack } from "../functions/functions";
 
 interface IShiftLotteryRow {
@@ -11,9 +11,10 @@ interface IShiftLotteryRow {
   addOrSubCurrentLotteryNumber: (index: number, addOrSub: "add" | "sub") => void;
   removeLotteryRow: (index: number) => void;
   isEmpty: boolean;
+  presentShiftActions: any
 }
 
-const ShiftLotteryRow: React.FC<IShiftLotteryRow> = ({ LotteryPack, index, deleteMode, addNewLotteryPack, onCurrentLotteryNumberChange, addOrSubCurrentLotteryNumber, removeLotteryRow, isEmpty }) => {
+const ShiftLotteryRow: React.FC<IShiftLotteryRow> = ({ LotteryPack, index, deleteMode, addNewLotteryPack, onCurrentLotteryNumberChange, addOrSubCurrentLotteryNumber, removeLotteryRow, isEmpty, presentShiftActions }) => {
   function focusOnNextInput(index: number) {
     const nextInput: HTMLIonInputElement | null = document.getElementById(index + "Focus") as HTMLIonInputElement;
     nextInput.value = "";
@@ -38,24 +39,6 @@ const ShiftLotteryRow: React.FC<IShiftLotteryRow> = ({ LotteryPack, index, delet
 
   return (
     <>
-      <div hidden={!isEmpty} className="overlay">
-        {isEmpty ? 
-        <IonGrid >
-          <IonRow>
-            <IonCol ><IonButton fill="outline">Renew</IonButton></IonCol>
-            <IonCol ><IonButton fill="outline" color='success'>Add New</IonButton></IonCol>
-            <IonCol ><IonButton fill="clear" color='danger'>Undo</IonButton></IonCol>
-          </IonRow>
-        </IonGrid>
-        :
-        <IonButton
-          onClick={() => {
-            removeLotteryRow(index);
-          }}
-          fill="clear">
-          <IonIcon slot="icon-only" color="danger" size="large" icon={removeCircleSharp} />
-        </IonButton>}
-      </div>
       <IonRow>
         <IonLabel>
           <p>
@@ -99,6 +82,14 @@ const ShiftLotteryRow: React.FC<IShiftLotteryRow> = ({ LotteryPack, index, delet
         <IonCol>
           <IonItem lines="none">
             <IonLabel slot="end">$ {LotteryPack.sale}</IonLabel>
+          </IonItem>
+        </IonCol>
+
+        <IonCol size="auto">
+          <IonItem lines="none">
+            <IonButton onClick={(e) => {presentShiftActions({event: e.nativeEvent, i: index})}} size="small" fill="clear">
+              <IonIcon size="small" slot="icon-only" icon={ellipsisVerticalSharp} />
+            </IonButton>
           </IonItem>
         </IonCol>
       </IonRow>

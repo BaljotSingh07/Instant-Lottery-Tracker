@@ -1,6 +1,7 @@
 import dayjs from "dayjs";
 import { db } from "./firebase";
 import { collection, doc, getDoc, getDocs, limit, orderBy, query, setDoc } from "firebase/firestore";
+import { ILotteryPackEnding } from "./functions_lotterypackSettings";
 
 export type ILotteryPack = {
   name: string;
@@ -8,6 +9,7 @@ export type ILotteryPack = {
   cur: number;
   sale: number;
   cost: number;
+  endding ?: number;
 } | null;
 
 export interface ISummary {
@@ -39,34 +41,9 @@ interface IMockDatabase {
   data: Array<IShift>;
 }
 
-const mockDatabase: IMockDatabase = {
-  data: [
-    {
-      date: dayjs("2022-10-30"),
-      lottos: [{ name: "Blackjack", cost: 1, cur: 10, prev: 0, sale: 10 }, { name: "Holiday", cost: 2, cur: 5, prev: 0, sale: 10 }, null, { name: "Packers", cost: 3, cur: 3, prev: 0, sale: 9 }],
-      summaray: {
-        lotto: 29,
-        online: 10,
-        total: 39,
-      },
-      notes: "Some notes",
-    },
-    {
-      date: dayjs("2022-10-29"),
-      lottos: [
-        { name: "Blackjack", cost: 1, cur: 10, prev: 10, sale: 0 },
-        { name: "Holiday", cost: 2, cur: 5, prev: 5, sale: 0 },
-        { name: "Packers", cost: 3, cur: 3, prev: 3, sale: 0 },
-      ],
-      summaray: {
-        lotto: 0,
-        online: 0,
-        total: 0,
-      },
-      notes: "Some notes",
-    },
-  ],
-};
+function getLotteryEnding(endings: Array<ILotteryPackEnding>){
+
+}
 
 export async function getPrevShiftByDate(date: dayjs.Dayjs){
   const previousDate = date.subtract(1, "day").format("MM-DD-YYYY");
@@ -134,14 +111,18 @@ export async function setShiftByDate(date: dayjs.Dayjs, newShift: IShift) {
   return ret
 }
 
-export async function updateOnlineByDate(date: dayjs.Dayjs, newSale: number){
-  const shift = await getShiftByDate(date);
-  if (shift) {
-    shift.summaray.online = newSale;
-    shift.summaray.total = shift.summaray.lotto + newSale;
-    return { ...shift.summaray, notes: shift.notes, date: shift.date };
-  }
-  return false;
+export async function updateOnlineByDate(date: dayjs.Dayjs, newOnlineSale: number, newTotalSale: number){
+  // const shift = await getShiftByDate(date);
+  // if (shift) {
+  //   shift.summaray.online = newSale;
+  //   shift.summaray.total = shift.summaray.lotto + newSale;
+  //   return { ...shift.summaray, notes: shift.notes, date: shift.date };
+  // }
+  // return false;
+
+  return setDoc(doc(db, 'Shifts', date.format("MM-DD-YYYY")), {Summary: {online : newOnlineSale, total: newTotalSale}}, {merge: true})
+  .then(() => true)
+  .catch(() => false)
 }
 
 export async function getHistory() {
@@ -162,8 +143,4 @@ export async function getHistory() {
     return returnVal
   })
   
-}
-
-export function printMockDatabase() {
-  console.log(mockDatabase);
 }
