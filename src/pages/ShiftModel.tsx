@@ -1,13 +1,12 @@
-import { IonContent, IonHeader, IonTitle, IonToolbar, IonReorder, IonReorderGroup, IonItem, IonLabel, IonGrid, IonButton, IonIcon, IonInput, IonList, IonListHeader, IonTextarea, IonLoading, useIonToast, IonModal, useIonActionSheet, IonProgressBar, useIonPopover } from "@ionic/react";
-import React, { useEffect, useRef, useState } from "react";
-import { checkmarkSharp, addSharp, trashBinOutline, ellipsisVerticalSharp, reorderThreeOutline } from "ionicons/icons";
+import { IonContent, IonHeader, IonTitle, IonToolbar, IonReorder, IonReorderGroup, IonItem, IonLabel, IonGrid, IonButton, IonInput, IonList, IonListHeader, IonTextarea, useIonToast, IonModal, IonProgressBar, IonPopover, IonSegment, IonSegmentButton } from "@ionic/react";
+import React, { MouseEvent, useEffect, useRef, useState } from "react";
+import { checkmarkSharp } from "ionicons/icons";
 import { getShiftByDate, setShiftByDate, ILotteryPack, ISummary, IHistory, IShift, getPrevShiftByDate } from "../functions/functions";
 import dayjs from "dayjs";
 import "./Shift.css";
 import Lottries from "./Lottries";
 import { useLocation, useHistory } from "react-router";
 import ShiftLotteryRow from "../components/ShiftLotteryRow";
-import { OverlayEventDetail } from "@ionic/core";
 import ShiftLotteryRowActions from "../components/ShiftLotteryRowActions";
 
 interface IShiftProps {
@@ -25,11 +24,10 @@ const Shift: React.FC<IShiftProps> = ({ date, ondissmiss, creatingANewShift = fa
   });
   const [notes, setNotes] = useState("");
   const [presentToast] = useIonToast();
-  const [presentShiftActions, dismissShiftActions] = useIonPopover(ShiftLotteryRowActions, {onHide: () => dismissShiftActions(), onDeleteClick: (i: number, e: number) => {console.log('delete clicked', i, e)}})
-  const [lotteryModalState, setLotteryModalState] = useState<{open: boolean, putAtIndex?: number}>({open: false});
+  const [lotteryModalState, setLotteryModalState] = useState<{ open: boolean; putAtIndex?: number }>({ open: false });
   const [loadingScreen, setLoadingScreen] = useState(true);
-  const [deleteMode, setDeleteMode] = useState(false);
   const [reorderMode, setReorderMode] = useState(false);
+  const [lotteryActionPopover, setLotteryActionPopover] = useState<{ open: boolean; event?: MouseEvent; index?: number }>({ open: false });
   const ionContentRef = useRef<HTMLIonContentElement>(null);
   const nav = useHistory();
   const location = useLocation();
@@ -74,36 +72,20 @@ const Shift: React.FC<IShiftProps> = ({ date, ondissmiss, creatingANewShift = fa
   }
 
   function lotteryModalDissmised(newLottery: ILotteryPack | undefined) {
-    setLotteryModalState({open: false});
+    setLotteryModalState({ open: false });
     nav.replace("?modalOpened=true");
     if (newLottery) {
       const clonedShift = [...lotteries];
-      if(lotteryModalState.putAtIndex){
-        clonedShift[lotteryModalState.putAtIndex] = newLottery
-      }else{
+      if (lotteryModalState.putAtIndex) {
+        if(clonedShift[lotteryModalState.putAtIndex])
+          clonedShift.splice(lotteryModalState.putAtIndex, 0, newLottery)
+        else
+          clonedShift[lotteryModalState.putAtIndex] = newLottery;
+      } else {
         clonedShift.push(newLottery);
       }
       setLotteries(clonedShift);
     }
-  }
-
-  function removeLotteryRow(i: number) {
-    const cloneData = [...lotteries];
-    if (i === cloneData.length - 1) {
-      cloneData.pop();
-      for (let i = cloneData.length - 1; i >= 0; i--) {
-        console.log(cloneData[i]);
-        if (cloneData[i] === null) {
-          cloneData.pop();
-        } else {
-          break;
-        }
-      }
-    } else {
-      cloneData[i] = null;
-    }
-    setLotteries(cloneData);
-    setDeleteMode(false);
   }
 
   async function finish() {
@@ -128,19 +110,17 @@ const Shift: React.FC<IShiftProps> = ({ date, ondissmiss, creatingANewShift = fa
 
   useEffect(() => {
     if (!location.search.includes("lottriesOpen=true")) {
-      setLotteryModalState({open: false});
+      setLotteryModalState({ open: false });
     }
   }, [location]);
 
-  async function getShiftData(){
-    if(date){
+  async function getShiftData() {
+    if (date) {
       setLoadingScreen(true);
-      
+
       let shiftData: IShift | undefined;
-      if(creatingANewShift)
-        shiftData = await getPrevShiftByDate(date)
-      else
-        shiftData = await getShiftByDate(date)
+      if (creatingANewShift) shiftData = await getPrevShiftByDate(date);
+      else shiftData = await getShiftByDate(date);
 
       if (shiftData && shiftData.lottos) {
         setLotteries(shiftData.lottos);
@@ -148,31 +128,59 @@ const Shift: React.FC<IShiftProps> = ({ date, ondissmiss, creatingANewShift = fa
         setNotes(shiftData.notes);
         setLoadingScreen(false);
       }
-
     }
   }
 
   useEffect(() => {
     if (!date) return;
-    getShiftData()
+    getShiftData();
   }, [date]);
 
-  function onShiftActionSheetDissmiss(detail: OverlayEventDetail<any>){
-    if(!detail.data) return // the actions sheet was exited by backdrop
+  function openLotteryPopover(index: number, event: MouseEvent) {
+    setLotteryActionPopover({ open: true, index: index, event: event });
+  }
 
-    const buttonActions = detail.data.action
-    if(buttonActions === "reorder"){
-      setReorderMode(!reorderMode)
-    }else if(buttonActions === "new"){
-      nav.push("?modalOpened=true&lottriesOpen=true");
-      setLotteryModalState({open: true});
-    }else if(buttonActions === "delete"){
-      setDeleteMode(!deleteMode)
+  function deleteLottery() {
+    const cloneData = [...lotteries];
+    if (lotteryActionPopover.index === cloneData.length - 1) {
+      cloneData.pop();
+      for (let i = cloneData.length - 1; i >= 0; i--) {
+        console.log(cloneData[i]);
+        if (cloneData[i] === null) {
+          cloneData.pop();
+        } else {
+          break;
+        }
+      }
+    } else {
+      if (lotteryActionPopover.index !== undefined) cloneData[lotteryActionPopover.index] = null;
     }
+    setLotteries(cloneData);
+    setLotteryActionPopover({ open: false });
+  }
+
+  function newRow() {
+    if (lotteryActionPopover.index === undefined) return;
+
+    nav.push("?modalOpened=true&lottriesOpen=true");
+    setLotteryModalState({ open: true, putAtIndex: lotteryActionPopover.index + 1 });
+    setLotteryActionPopover({ open: false });
+  }
+
+  function replaceLottery() {
+    setLotteryActionPopover({ open: false });
   }
 
   return (
     <>
+      <IonPopover
+        isOpen={lotteryActionPopover.open}
+        event={lotteryActionPopover.event}
+        onDidDismiss={() => {
+          setLotteryActionPopover({ open: false });
+        }}>
+        <ShiftLotteryRowActions onDeleteClick={deleteLottery} onNewRowClick={newRow} onReplaceClick={replaceLottery} />
+      </IonPopover>
       <IonHeader>
         <IonToolbar>
           <IonButton
@@ -191,7 +199,7 @@ const Shift: React.FC<IShiftProps> = ({ date, ondissmiss, creatingANewShift = fa
         </IonToolbar>
       </IonHeader>
       <IonContent ref={ionContentRef} className="ion-padding">
-      <IonProgressBar hidden={!loadingScreen} type="indeterminate" />
+        <IonProgressBar hidden={!loadingScreen} type="indeterminate" />
         <IonListHeader>
           <h1>{date?.format("MMM DD, YYYY")}</h1>
         </IonListHeader>
@@ -208,17 +216,15 @@ const Shift: React.FC<IShiftProps> = ({ date, ondissmiss, creatingANewShift = fa
                   index={i}
                   addNewLotteryPack={() => {
                     nav.push("?modalOpened=true&lottriesOpen=true");
-                    setLotteryModalState({open: true, putAtIndex: i});
+                    setLotteryModalState({ open: true, putAtIndex: i });
                   }}
                   onCurrentLotteryNumberChange={onCurrentLotteryNumberChange}
                   addOrSubCurrentLotteryNumber={addORsub}
-                  deleteMode={deleteMode}
-                  removeLotteryRow={removeLotteryRow}
                   isEmpty={true}
-                  presentShiftActions={presentShiftActions}
+                  onLotteryActionClick={openLotteryPopover}
                 />
               </IonGrid>
-              <IonReorder slot="end"/>
+              <IonReorder slot="end" />
             </IonItem>
           ))}
         </IonReorderGroup>
@@ -252,6 +258,11 @@ const Shift: React.FC<IShiftProps> = ({ date, ondissmiss, creatingANewShift = fa
         <IonModal onIonModalWillDismiss={() => lotteryModalDissmised(undefined)} isOpen={lotteryModalState.open}>
           <Lottries ondissmiss={lotteryModalDissmised} />
         </IonModal>
+        <IonHeader>Reorder</IonHeader>
+        <IonSegment onIonChange={(e) => {if(e.detail.value === 'off') setReorderMode(false); else setReorderMode(true)}}>
+          <IonSegmentButton value="off">Off</IonSegmentButton>
+          <IonSegmentButton value="on">On</IonSegmentButton>
+        </IonSegment>
       </IonContent>
     </>
   );

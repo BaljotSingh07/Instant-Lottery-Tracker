@@ -1,20 +1,19 @@
 import { IonRow, IonLabel, IonCol, IonItem, IonButton, IonInput, IonIcon, IonGrid } from "@ionic/react";
 import { addSharp, ellipsisVerticalSharp, removeCircleSharp } from "ionicons/icons";
+import { MouseEvent } from "react";
 import { ILotteryPack } from "../functions/functions";
 
 interface IShiftLotteryRow {
   LotteryPack: ILotteryPack;
   index: number;
-  deleteMode: boolean;
   addNewLotteryPack: () => void;
   onCurrentLotteryNumberChange: (e: any, index: number) => void;
   addOrSubCurrentLotteryNumber: (index: number, addOrSub: "add" | "sub") => void;
-  removeLotteryRow: (index: number) => void;
   isEmpty: boolean;
-  presentShiftActions: any
+  onLotteryActionClick: (index: number, event: MouseEvent) => void
 }
 
-const ShiftLotteryRow: React.FC<IShiftLotteryRow> = ({ LotteryPack, index, deleteMode, addNewLotteryPack, onCurrentLotteryNumberChange, addOrSubCurrentLotteryNumber, removeLotteryRow, isEmpty, presentShiftActions }) => {
+const ShiftLotteryRow: React.FC<IShiftLotteryRow> = ({ LotteryPack, index, addNewLotteryPack, onCurrentLotteryNumberChange, addOrSubCurrentLotteryNumber, isEmpty, onLotteryActionClick }) => {
   function focusOnNextInput(index: number) {
     const nextInput: HTMLIonInputElement | null = document.getElementById(index + "Focus") as HTMLIonInputElement;
     nextInput.value = "";
@@ -87,7 +86,7 @@ const ShiftLotteryRow: React.FC<IShiftLotteryRow> = ({ LotteryPack, index, delet
 
         <IonCol size="auto">
           <IonItem lines="none">
-            <IonButton onClick={(e) => {presentShiftActions({event: e.nativeEvent, i: index})}} size="small" fill="clear">
+            <IonButton onClick={(e) => {onLotteryActionClick(index, e)}} size="small" fill="clear">
               <IonIcon size="small" slot="icon-only" icon={ellipsisVerticalSharp} />
             </IonButton>
           </IonItem>
